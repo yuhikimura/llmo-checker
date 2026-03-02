@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO & LLMO 診断サポーター</title>
+<meta name="description" content="URLを入力するだけでサイトのSEO・LLMO対応度を包括的にスコアリング。AI時代のWebマーケティング診断ツール。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --bg-0: #06060c;
+  --bg-1: #0c0c18;
+  --bg-2: #141428;
+  --bg-3: #1c1c38;
+  --bg-card: #13132a;
+  --accent-1: #00e0ff;
+  --accent-2: #7b2fff;
+  --accent-3: #ff2d7b;
+  --accent-4: #00ff99;
+  --accent-5: #ffc800;
+  --text-0: #f0f0ff;
+  --text-1: #b0b0cc;
+  --text-2: #6a6a88;
+  --text-3: #3a3a55;
+  --border-1: #1e1e3a;
+  --border-2: #2a2a4a;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-glow: 0 0 40px rgba(0,224,255,0.08);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+  --font-body: 'Zen Kaku Gothic New', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-0);
+  color: var(--text-0);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Background Effects === */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 800px 600px at 10% 20%, rgba(123,47,255,0.08), transparent),
+    radial-gradient(ellipse 600px 800px at 90% 80%, rgba(0,224,255,0.06), transparent),
+    radial-gradient(ellipse 400px 400px at 50% 50%, rgba(255,45,123,0.04), transparent);
+}
+
+.bg-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,224,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,224,255,0.015) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* === Layout === */
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+/* === Header === */
+.header {
+  text-align: center;
+  padding: 48px 20px 36px;
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(123,47,255,0.12), rgba(0,224,255,0.12));
+  border: 1px solid rgba(123,47,255,0.25);
+  padding: 5px 14px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent-1);
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.header h1 {
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #fff 0%, var(--accent-1) 40%, var(--accent-2) 70%, var(--accent-3) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+}
+
+.header p {
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+}
+
+.header-line {
+  width: 120px;
+  height: 2px;
+  margin: 24px auto 0;
+  background: linear-gradient(90deg, transparent, var(--accent-2), var(--accent-1), transparent);
+  border-radius: 1px;
+}
+
+/* === Input Area === */
+.input-area {
+  max-width: 880px;
+  margin: 0 auto 16px;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.url-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-md);
+  padding: 15px 20px;
+  color: var(--text-0);
+  font-size: 15px;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: var(--transition);
+}
+
+.url-input:focus {
+  border-color: var(--accent-1);
+  box-shadow: 0 0 0 3px rgba(0,224,255,0.1), var(--shadow-glow);
+}
+
+.url-input::placeholder { color: var(--text-3); }
+
+.btn {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 15px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  font-family: var(--font-body);
+  letter-spacing: 0.3px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(0,224,255,0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,224,255,0.3);
+}
+
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-2);
+  color: var(--text-0);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+}
+
+.btn-sm { padding: 8px 16px; font-size: 12px; border-radius: var(--radius-sm); }
+
+/* === Batch URL Input === */
+.batch-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+  cursor: pointer;
+  margin-bottom: 8px;
+  user-select: none;
+  transition: var(--transition);
+}
+
+.batch-toggle:hover { color: var(--accent-1); }
+
+.batch-area {
+  display: none;
+  margin-bottom: 12px;
+}
+
+.batch-area.open { display: block; }
+
+.batch-textarea {
+  width: 100%;
+  min-height: 100px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  color: var(--text-0);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  line-height: 1.8;
+  outline: none;
+  resize: vertical;
+  transition: var(--transition);
+}
+
+.batch-textarea:focus { border-color: var(--accent-1); }
+.batch-textarea::placeholder { color: var(--text-3); }
+
+.batch-note {
+  font-size: 11px;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+
+/* === Settings Panel === */
+.settings-panel {
+  max-width: 880px;
+  margin: 0 auto 28px;
+}
+
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
+  padding: 6px 0;
+}
+
+.settings-toggle:hover { color: var(--accent-1); }
+
+.settings-body {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin-top: 8px;
+}
+
+.settings-body.open { display: block; }
+
+.setting-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.setting-row:last-child { margin-bottom: 0; }
+
+.setting-row label {
+  font-size: 12px;
+  color: var(--text-1);
+  min-width: 200px;
+  font-weight: 500;
+}
+
+.setting-row input {
+  flex: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text-0);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: var(--transition);
+}
+
+.setting-row input:focus { border-color: var(--accent-2); }
+
+.setting-note {
+  font-size: 11px;
+  color: var(--text-2);
+  margin-top: 6px;
+  line-height: 1.7;
+}
+
+/* === Progress === */
+.progress-wrap {
+  max-width: 880px;
+  margin: 0 auto 28px;
+  display: none;
+}
+
+.progress-wrap.active { display: block; }
+
+.progress-outer {
+  width: 100%;
+  height: 5px;
+  background: var(--bg-3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent-1), var(--accent-4));
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+  transition: width 0.6s ease;
+  width: 0%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.progress-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-2);
+  border-top-color: var(--accent-1);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* === Results === */
+.results { display: none; }
+.results.active { display: block; }
+
+/* Overall Score */
+.overview-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-lg);
+  padding: 44px 24px 36px;
+  text-align: center;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.overview-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 400px at 50% 30%, rgba(123,47,255,0.06), transparent);
+  pointer-events: none;
+}
+
+.overview-url {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 24px;
+  word-break: break-all;
+}
+
+.ring-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 16px;
+}
+
+.ring-svg {
+  width: 220px;
+  height: 220px;
+  transform: rotate(-90deg);
+}
+
+.ring-bg { fill: none; stroke: var(--border-1); stroke-width: 10; }
+
+.ring-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.ring-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 56px;
+  font-weight: 700;
+}
+
+.ring-label {
+  font-size: 12px;
+  color: var(--text-2);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.grade-label {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.overview-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.stat-item { text-align: center; }
+
+.stat-label {
+  font-size: 10px;
+  color: var(--text-2);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 3px;
+  max-width: 480px;
+  margin: 0 auto 24px;
+  background: var(--bg-1);
+  padding: 3px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-1);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 11px;
+  transition: var(--transition);
+  font-family: var(--font-body);
+}
+
+.tab-btn:hover { color: var(--text-1); }
+
+.tab-btn.active {
+  background: var(--bg-3);
+  color: var(--accent-1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Category Cards */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.cat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: var(--transition);
+  box-shadow: var(--shadow-card);
+}
+
+.cat-card:hover {
+  border-color: rgba(0,224,255,0.2);
+  transform: translateY(-1px);
+}
+
+.cat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
+}
+
+.cat-head:hover { background: rgba(255,255,255,0.015); }
+
+.cat-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.cat-name { font-size: 14px; font-weight: 700; }
+.cat-sub { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+
+.cat-score {
+  font-size: 30px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.cat-bar {
+  height: 3px;
+  background: var(--bg-3);
+  margin: 0 20px;
+}
+
+.cat-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+.cat-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.45s ease, padding 0.45s ease;
+  padding: 0 20px;
+}
+
+.cat-body.open {
+  max-height: 3000px;
+  padding: 14px 20px 20px;
+}
+
+.check-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  gap: 12px;
+}
+
+.check-row:last-child { border-bottom: none; }
+
+.check-info { flex: 1; }
+
+.check-name {
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.pass { background: var(--accent-4); box-shadow: 0 0 6px rgba(0,255,153,0.4); }
+.status-dot.warn { background: var(--accent-5); box-shadow: 0 0 6px rgba(255,200,0,0.4); }
+.status-dot.fail { background: var(--accent-3); box-shadow: 0 0 6px rgba(255,45,123,0.4); }
+
+.check-detail {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.7;
+  padding-left: 16px;
+}
+
+.check-pts {
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  min-width: 48px;
+  text-align: right;
+}
+
+/* === Toolbar (Export/History) === */
+.toolbar {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 32px;
+}
+
+/* === History Panel === */
+.history-panel {
+  max-width: 880px;
+  margin: 40px auto 0;
+  display: none;
+}
+
+.history-panel.active { display: block; }
+
+.history-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  gap: 12px;
+}
+
+.history-item:hover {
+  border-color: var(--accent-2);
+  background: var(--bg-2);
+}
+
+.history-item-url {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-1);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-item-score {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.history-item-date {
+  font-size: 11px;
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+
+.history-item-del {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: var(--transition);
+}
+
+.history-item-del:hover { color: var(--accent-3); background: rgba(255,45,123,0.1); }
+
+.history-empty {
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 20px;
+}
+
+/* === Batch Results === */
+.batch-results {
+  max-width: 880px;
+  margin: 0 auto 32px;
+  display: none;
+}
+
+.batch-results.active { display: block; }
+
+.batch-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-1);
+}
+
+.batch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.batch-table th {
+  background: var(--bg-3);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border-2);
+}
+
+.batch-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-1);
+  background: var(--bg-card);
+}
+
+.batch-table tr:last-child td { border-bottom: none; }
+
+.batch-table .url-cell {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-table .score-cell {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* === Responsive === */
+@media (max-width: 940px) {
+  .cat-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .input-row { flex-direction: column; }
+  .btn { width: 100%; }
+  .overview-stats { gap: 20px; }
+  .setting-row { flex-direction: column; align-items: flex-start; }
+  .setting-row label { min-width: auto; }
+  .tabs { max-width: 100%; }
+  .app { padding: 12px 10px 60px; }
+}
+
+/* === Animations === */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.anim-in {
+  animation: fadeUp 0.45s ease forwards;
+  opacity: 0;
+}
+
+/* === PDF area (hidden) === */
+#pdfCapture { position: absolute; left: -9999px; top: 0; width: 1200px; }
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+
+<div class="app" id="app">
+
+<!-- Header -->
+<header class="header">
+  <div class="header-badge">◆ SEO & LLMO Diagnostic v2.0</div>
+  <h1>SEO & LLMO 診断サポーター</h1>
+  <p>URLを入力してサイトのSEO / LLMO対応度を包括的にスコアリング</p>
+  <div class="header-line"></div>
+</header>
+
+<!-- Input -->
+<div class="input-area">
+  <div class="input-row">
+    <input type="url" class="url-input" id="urlInput" placeholder="https://example.com" />
+    <button class="btn btn-primary" id="scanBtn" onclick="startScan()">🔍 診断開始</button>
+  </div>
+
+  <div class="batch-toggle" onclick="toggleBatch()">
+    <span id="batchArrow">▶</span> 複数URL一括診断
+  </div>
+  <div class="batch-area" id="batchArea">
+    <textarea class="batch-textarea" id="batchUrls" placeholder="https://example.com&#10;https://example.org&#10;https://example.net"></textarea>
+    <div class="batch-note">※ 1行に1つのURLを入力してください（最大10件）</div>
+    <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="startBatchScan()">🚀 一括診断開始</button>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="settings-panel">
+  <div class="settings-toggle" onclick="toggleSettings()">
+    <span id="settingsArrow">▶</span> ⚙️ 設定
+  </div>
+  <div class="settings-body" id="settingsBody">
+    <div class="setting-row">
+      <label>Cloudflare Worker URL</label>
+      <input type="text" id="workerUrl" placeholder="https://your-worker.workers.dev" />
+    </div>
+    <div class="setting-row">
+      <label>PageSpeed Insights API Key</label>
+      <input type="password" id="psiKey" placeholder="AIza..." />
+    </div>
+    <div class="setting-note">
+      <strong>Cloudflare Worker:</strong> CORS回避用プロキシ。未設定の場合はフォールバックプロキシを使用します。<br>
+      <strong>PSI API Key:</strong> Google Cloud ConsoleでPageSpeed Insights APIを有効化して取得。Core Web Vitals等の公式データ取得に使用。<br>
+      ※ 設定値はブラウザのlocalStorageに保存され、外部送信されません。
+    </div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-outer">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="progress-status">
+    <div class="progress-step">
+      <div class="progress-spinner"></div>
+      <span id="progressText">準備中...</span>
+    </div>
+    <span id="progressPct">0%</span>
+  </div>
+</div>
+
+<!-- Batch Results Table -->
+<div class="batch-results" id="batchResults">
+  <h3 style="font-size:16px;margin-bottom:14px">📊 一括診断結果</h3>
+  <div class="batch-table-wrap">
+    <table class="batch-table" id="batchTable">
+      <thead><tr>
+        <th>URL</th><th>総合</th><th>SEO</th><th>LLMO</th><th>ランク</th><th>操作</th>
+      </tr></thead>
+      <tbody id="batchTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Results -->
+<div class="results" id="resultsSection">
+  <div class="overview-card anim-in" id="overviewCard">
+    <div class="overview-url" id="resultUrl"></div>
+    <div class="ring-label">TOTAL SCORE</div>
+    <div class="ring-wrap">
+      <svg class="ring-svg" viewBox="0 0 220 220">
+        <circle class="ring-bg" cx="110" cy="110" r="94"/>
+        <circle class="ring-fill" id="ringFill" cx="110" cy="110" r="94"
+          stroke-dasharray="591" stroke-dashoffset="591"/>
+      </svg>
+      <div class="ring-number" id="ringNumber">0</div>
+    </div>
+    <div class="grade-label" id="gradeLabel">—</div>
+    <div class="overview-stats">
+      <div class="stat-item">
+        <div class="stat-label">SEO Score</div>
+        <div class="stat-value" id="seoStat" style="color:var(--accent-1)">—</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">LLMO Score</div>
+        <div class="stat-value" id="llmoStat" style="color:var(--accent-2)">—</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Checks</div>
+        <div class="stat-value" id="checksStat" style="color:var(--accent-4)">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('all',this)">全て</button>
+    <button class="tab-btn" onclick="switchTab('seo',this)">SEO</button>
+    <button class="tab-btn" onclick="switchTab('llmo',this)">LLMO</button>
+  </div>
+
+  <div id="catContainer"></div>
+
+  <div class="toolbar">
+    <button class="btn btn-secondary btn-sm" onclick="exportCSV()">📋 CSV出力</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportPDF()">📄 PDF出力</button>
+    <button class="btn btn-secondary btn-sm" onclick="toggleHistory()">📚 診断履歴</button>
+  </div>
+</div>
+
+<!-- History -->
+<div class="history-panel" id="historyPanel">
+  <div class="history-title">📚 診断履歴</div>
+  <div id="historyList"></div>
+</div>
+
+</div><!-- /app -->
+
+<!-- Hidden PDF area -->
+<div id="pdfCapture"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let currentResults = null;
+let currentUrl = '';
+let currentTab = 'all';
+
+// ============================================================
+// SETTINGS / STORAGE
+// ============================================================
+function loadSettings() {
+  try {
+    const w = localStorage.getItem('sld_worker_url');
+    const p = localStorage.getItem('sld_psi_key');
+    if (w) document.getElementById('workerUrl').value = w;
+    if (p) document.getElementById('psiKey').value = p;
+  } catch(e) {}
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem('sld_worker_url', document.getElementById('workerUrl').value.trim());
+    localStorage.setItem('sld_psi_key', document.getElementById('psiKey').value.trim());
+  } catch(e) {}
+}
+
+function getWorkerUrl() { return document.getElementById('workerUrl').value.trim(); }
+function getPsiKey() { return document.getElementById('psiKey').value.trim(); }
+
+// ============================================================
+// HISTORY
+// ============================================================
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('sld_history') || '[]'); } catch { return []; }
+}
+
+function saveToHistory(url, results) {
+  const history = getHistory();
+  const entry = {
+    id: Date.now(),
+    url,
+    date: new Date().toISOString(),
+    totalPct: Math.round((results.totalScore / results.totalMax) * 100),
+    seoPct: Math.round((results.seoScore / results.seoMax) * 100),
+    llmoPct: Math.round((results.llmoScore / results.llmoMax) * 100),
+    results
+  };
+  // Remove duplicate URL
+  const filtered = history.filter(h => h.url !== url);
+  filtered.unshift(entry);
+  // Keep max 50
+  if (filtered.length > 50) filtered.length = 50;
+  try { localStorage.setItem('sld_history', JSON.stringify(filtered)); } catch(e) {}
+}
+
+function deleteHistory(id) {
+  const history = getHistory().filter(h => h.id !== id);
+  try { localStorage.setItem('sld_history', JSON.stringify(history)); } catch(e) {}
+  renderHistory();
+}
+
+function clearHistory() {
+  if (confirm('診断履歴をすべて削除しますか？')) {
+    try { localStorage.removeItem('sld_history'); } catch(e) {}
+    renderHistory();
+  }
+}
+
+function renderHistory() {
+  const history = getHistory();
+  const el = document.getElementById('historyList');
+  if (!history.length) {
+    el.innerHTML = '<div class="history-empty">診断履歴はまだありません</div>';
+    return;
+  }
+  el.innerHTML = history.map(h => {
+    const color = getScoreColor(h.totalPct, 100);
+    const d = new Date(h.date);
+    const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `<div class="history-item" onclick="loadHistory(${h.id})">
+      <div class="history-item-url">${h.url}</div>
+      <div class="history-item-score" style="color:${color}">${h.totalPct}</div>
+      <div class="history-item-date">${dateStr}</div>
+      <button class="history-item-del" onclick="event.stopPropagation();deleteHistory(${h.id})">✕</button>
+    </div>`;
+  }).join('') + `<div style="text-align:center;margin-top:12px">
+    <button class="btn btn-secondary btn-sm" onclick="clearHistory()">🗑️ 全削除</button>
+  </div>`;
+}
+
+function loadHistory(id) {
+  const entry = getHistory().find(h => h.id === id);
+  if (!entry) return;
+  currentUrl = entry.url;
+  currentResults = entry.results;
+  renderResults(entry.results, entry.url);
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================================
+// UI TOGGLES
+// ============================================================
+function toggleBatch() {
+  const el = document.getElementById('batchArea');
+  const ar = document.getElementById('batchArrow');
+  el.classList.toggle('open');
+  ar.textContent = el.classList.contains('open') ? '▼' : '▶';
+}
+
+function toggleSettings() {
+  const el = document.getElementById('settingsBody');
+  const ar = document.getElementById('settingsArrow');
+  el.classList.toggle('open');
+  ar.textContent = el.classList.contains('open') ? '▼' : '▶';
+}
+
+function toggleHistory() {
+  const el = document.getElementById('historyPanel');
+  el.classList.toggle('active');
+  if (el.classList.contains('active')) renderHistory();
+}
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (currentResults) renderCategories(tab);
+}
+
+function toggleCat(el) {
+  el.nextElementSibling.nextElementSibling.classList.toggle('open');
+}
+
+// ============================================================
+// UTILITY
+// ============================================================
+function getScoreColor(score, max) {
+  const p = (score / max) * 100;
+  if (p >= 80) return 'var(--accent-4)';
+  if (p >= 60) return '#88ff00';
+  if (p >= 40) return 'var(--accent-5)';
+  if (p >= 20) return '#ff8800';
+  return 'var(--accent-3)';
+}
+
+function getGrade(p) {
+  if (p >= 90) return { l: 'S ランク — 極めて優秀', c: 'var(--accent-4)' };
+  if (p >= 80) return { l: 'A ランク — 優秀', c: '#88ff00' };
+  if (p >= 65) return { l: 'B ランク — 良好', c: 'var(--accent-5)' };
+  if (p >= 50) return { l: 'C ランク — 改善余地あり', c: '#ff8800' };
+  return { l: 'D ランク — 要改善', c: 'var(--accent-3)' };
+}
+
+function statusDot(score, max) {
+  const p = (score / max) * 100;
+  if (p >= 70) return '<span class="status-dot pass"></span>';
+  if (p >= 40) return '<span class="status-dot warn"></span>';
+  return '<span class="status-dot fail"></span>';
+}
+
+function setProgress(pct, text) {
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = text;
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ============================================================
+// DATA FETCHING
+// ============================================================
+async function fetchViaWorker(endpoint, targetUrl) {
+  const worker = getWorkerUrl();
+  if (worker) {
+    try {
+      const resp = await fetch(`${worker}${endpoint}?url=${encodeURIComponent(targetUrl)}`, {
+        signal: AbortSignal.timeout(20000)
+      });
+      const data = await resp.json();
+      if (data.success) return data.body;
+      return null;
+    } catch(e) { console.warn('Worker fetch failed:', e); }
+  }
+  // Fallback: allorigins proxy
+  try {
+    const resp = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`, {
+      signal: AbortSignal.timeout(15000)
+    });
+    if (!resp.ok) return null;
+    return await resp.text();
+  } catch(e) {
+    console.warn('Fallback proxy failed:', e);
+    return null;
+  }
+}
+
+async function fetchHTML(url) { return fetchViaWorker('/api/fetch', url); }
+
+async function fetchRobots(url) {
+  const base = new URL(url);
+  return fetchViaWorker('/api/robots', `${base.protocol}//${base.hostname}/robots.txt`);
+}
+
+async function fetchSitemap(url) {
+  const base = new URL(url);
+  const text = await fetchViaWorker('/api/sitemap', `${base.protocol}//${base.hostname}/sitemap.xml`);
+  if (text && (text.includes('<urlset') || text.includes('<sitemapindex'))) return text;
+  return null;
+}
+
+async function fetchPSI(url) {
+  const key = getPsiKey();
+  try {
+    let ep = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=mobile&category=performance&category=seo&category=best-practices&category=accessibility`;
+    if (key) ep += `&key=${key}`;
+    const resp = await fetch(ep, { signal: AbortSignal.timeout(60000) });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch(e) { console.warn('PSI failed:', e); return null; }
+}
+
+// ============================================================
+// HTML ANALYSIS
+// ============================================================
+function analyzeHTML(html, url) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const r = {};
+
+  const title = doc.querySelector('title');
+  r.title = title ? title.textContent.trim() : '';
+  r.titleLen = r.title.length;
+
+  const md = doc.querySelector('meta[name="description"]');
+  r.metaDesc = md ? md.getAttribute('content') || '' : '';
+  r.metaDescLen = r.metaDesc.length;
+
+  r.h1 = doc.querySelectorAll('h1').length;
+  r.h2 = doc.querySelectorAll('h2').length;
+  r.h3 = doc.querySelectorAll('h3').length;
+  r.h4 = doc.querySelectorAll('h4').length;
+
+  const hTags = [];
+  doc.querySelectorAll('h1,h2,h3,h4').forEach(h => hTags.push(parseInt(h.tagName[1])));
+  r.hOk = true;
+  for (let i = 1; i < hTags.length; i++) { if (hTags[i] > hTags[i-1]+1) { r.hOk = false; break; } }
+
+  const imgs = doc.querySelectorAll('img');
+  r.imgs = imgs.length;
+  r.imgsAlt = 0;
+  imgs.forEach(i => { if (i.getAttribute('alt')?.trim()) r.imgsAlt++; });
+  r.imgsNoAlt = r.imgs - r.imgsAlt;
+
+  const links = doc.querySelectorAll('a[href]');
+  r.links = links.length;
+  r.intLinks = 0; r.extLinks = 0;
+  try {
+    const host = new URL(url).hostname;
+    links.forEach(a => {
+      try { new URL(a.href, url).hostname === host ? r.intLinks++ : r.extLinks++; }
+      catch { r.intLinks++; }
+    });
+  } catch {}
+
+  const jld = doc.querySelectorAll('script[type="application/ld+json"]');
+  r.jsonLD = [];
+  jld.forEach(s => { try { r.jsonLD.push(JSON.parse(s.textContent)); } catch {} });
+  r.hasSD = r.jsonLD.length > 0;
+  r.sdTypes = r.jsonLD.map(d => d['@type'] || (d['@graph'] ? 'Graph' : '?'));
+  r.hasMD = doc.querySelectorAll('[itemtype]').length > 0;
+
+  r.hasOGP = !!doc.querySelector('meta[property^="og:"]');
+  r.hasTC = !!doc.querySelector('meta[name^="twitter:"]');
+  r.hasCan = !!doc.querySelector('link[rel="canonical"]');
+  r.hasVP = !!doc.querySelector('meta[name="viewport"]');
+  r.hasCS = !!doc.querySelector('meta[charset]') || !!doc.querySelector('meta[http-equiv="content-type"]');
+  r.hasFav = !!doc.querySelector('link[rel="icon"],link[rel="shortcut icon"]');
+  r.lang = doc.querySelector('html')?.getAttribute('lang') || '';
+  r.hasFAQS = r.sdTypes.some(t => t === 'FAQPage' || t === 'Question');
+  r.hasFAQC = !!doc.querySelector('.faq,.qa,[class*="faq"],[class*="question"],details,summary') || html.includes('よくある質問') || html.includes('FAQ') || html.includes('Q&A');
+  r.hasAuth = !!doc.querySelector('[rel="author"],.author,[class*="author"],meta[name="author"]');
+  r.authMeta = doc.querySelector('meta[name="author"]')?.getAttribute('content') || '';
+  r.hasDef = html.includes('とは、') || html.includes('とは？') || html.includes('を指します') || html.includes('のことです');
+
+  const numPat = /\d{1,3}(,\d{3})*(\.\d+)?(%|件|円|万|億|人|社|回|年)/g;
+  const nums = html.match(numPat);
+  r.stats = nums ? nums.length : 0;
+  r.https = url.startsWith('https://');
+
+  const body = doc.body ? doc.body.textContent.replace(/\s+/g, ' ').trim() : '';
+  r.contentLen = body.length;
+  r.noindex = doc.querySelector('meta[name="robots"]')?.getAttribute('content')?.includes('noindex') || false;
+
+  return r;
+}
+
+// ============================================================
+// ROBOTS ANALYSIS
+// ============================================================
+function analyzeRobots(txt) {
+  if (!txt) return { exists: false };
+  const r = { exists: true };
+  const low = txt.toLowerCase();
+
+  // Check if specific bots are blocked
+  function isBotBlocked(botName) {
+    const regex = new RegExp(`user-agent:\\s*${botName}[\\s\\S]*?(?=user-agent:|$)`, 'i');
+    const match = low.match(regex);
+    if (!match) return false;
+    return match[0].includes('disallow: /');
+  }
+
+  r.gptBot = !isBotBlocked('gptbot');
+  r.googleExt = !isBotBlocked('google-extended');
+  r.claudeBot = !isBotBlocked('claudebot') && !isBotBlocked('claude-bot');
+  r.googleBot = !isBotBlocked('googlebot');
+  r.hasSM = low.includes('sitemap:');
+  return r;
+}
+
+// ============================================================
+// SCORING
+// ============================================================
+function calculateScores(h, rb, sm, psi) {
+  const cats = [];
+
+  // ─── LLMO 1: テクニカル基盤 ───
+  const c1 = { type:'llmo', name:'LLMO テクニカル基盤', sub:'クローラビリティ', icon:'🤖', bg:'rgba(123,47,255,0.15)', max:20, items:[] };
+
+  let s,d;
+  if (rb.exists) {
+    let ok = [rb.gptBot, rb.googleExt, rb.claudeBot].filter(Boolean).length;
+    s = Math.round((ok/3)*5);
+    d = `robots.txt: GPTBot=${rb.gptBot?'✓':'✗'} Google-Extended=${rb.googleExt?'✓':'✗'} ClaudeBot=${rb.claudeBot?'✓':'✗'}`;
+  } else { s=3; d='robots.txt未検出（デフォルト許可だが明示設定推奨）'; }
+  c1.items.push({name:'AIクローラー許可',score:s,max:5,detail:d});
+
+  if (h.hasSD) { s=Math.min(5,h.jsonLD.length*2+1); d=`JSON-LD: ${h.jsonLD.length}件 (${h.sdTypes.join(', ')})`; }
+  else if (h.hasMD) { s=2; d='Microdata検出（JSON-LD推奨）'; }
+  else { s=0; d='構造化データ未検出（JSON-LD実装推奨）'; }
+  c1.items.push({name:'構造化データ（Schema.org）',score:s,max:5,detail:d});
+
+  s=0;
+  if(h.h1===1)s+=2;else if(h.h1>0)s+=1;
+  if(h.h2>=2)s+=1;if(h.h3>=1)s+=1;if(h.hOk)s+=1;
+  c1.items.push({name:'Markdownフレンドリー構造',score:s,max:5,detail:`H1:${h.h1} H2:${h.h2} H3:${h.h3} H4:${h.h4} | 階層:${h.hOk?'適切':'不適切'}`});
+
+  if(psi){const p=psi.lighthouseResult?.categories?.performance?.score||0;s=Math.round(p*5);const a=psi.lighthouseResult?.audits||{};d=`Performance:${Math.round(p*100)}/100`;const lcp=a['largest-contentful-paint']?.displayValue;const cls=a['cumulative-layout-shift']?.displayValue;if(lcp)d+=` LCP:${lcp}`;if(cls)d+=` CLS:${cls}`;}
+  else{s=2;d='PSI APIデータなし（APIキーで詳細取得可能）';}
+  c1.items.push({name:'サイトスピード',score:s,max:5,detail:d});
+
+  c1.score=c1.items.reduce((a,i)=>a+i.score,0);cats.push(c1);
+
+  // ─── LLMO 2: コンテンツ戦略 ───
+  const c2={type:'llmo',name:'LLMO コンテンツ戦略',sub:'情報の質と形式',icon:'📝',bg:'rgba(255,136,0,0.15)',max:20,items:[]};
+
+  if(h.hasFAQS){s=5;d='FAQ構造化データ＋コンテンツ検出';}else if(h.hasFAQC){s=3;d='FAQコンテンツあり（構造化データ追加推奨）';}else{s=0;d='Q&A形式未検出（AI引用されやすいQ&A形式推奨）';}
+  c2.items.push({name:'Q&A形式コンテンツ',score:s,max:5,detail:d});
+
+  s=0;d=[];
+  if(h.hasAuth){s+=2;d.push('著者情報:あり'+(h.authMeta?` (${h.authMeta})`:''));}else d.push('著者情報:なし');
+  if(h.hasSD&&h.sdTypes.some(t=>['Person','Organization','Author'].includes(t))){s+=2;d.push('著者スキーマ:あり');}
+  if(h.contentLen>2000){s+=1;d.push('コンテンツ量:充実');}else d.push('コンテンツ量:少なめ');
+  c2.items.push({name:'E-E-A-Tシグナル',score:s,max:5,detail:d.join(' | ')});
+
+  s=h.hasDef?3:0;
+  c2.items.push({name:'引用されやすい定義文',score:s,max:5,detail:s?'定義文パターン検出（「〇〇とは」等）':'定義文パターン未検出（冒頭に定義文推奨）'});
+
+  s=Math.min(5,Math.round(h.stats/3));
+  c2.items.push({name:'統計データ・数値',score:s,max:5,detail:`数値データ:約${h.stats}件 ${s>=3?'— 具体的データ豊富':'— 数値追加推奨'}`});
+
+  c2.score=c2.items.reduce((a,i)=>a+i.score,0);cats.push(c2);
+
+  // ─── LLMO 3: 外部シグナル ───
+  const c3={type:'llmo',name:'LLMO 外部シグナル',sub:'サイテーション・評判',icon:'🌐',bg:'rgba(0,255,153,0.15)',max:10,items:[]};
+
+  c3.items.push({name:'外部リンク（参照多様性）',score:Math.min(3,Math.round(h.extLinks/5)),max:3,detail:`外部リンク:${h.extLinks}件`});
+  s=0;d=[];if(h.hasOGP){s+=2;d.push('OGP:✓');}else d.push('OGP:✗');if(h.hasTC){s+=1;d.push('TC:✓');}else d.push('TC:✗');
+  c3.items.push({name:'SNSシグナル対応',score:s,max:4,detail:d.join(' ')});
+  s=h.sdTypes.some(t=>['Review','AggregateRating','Rating'].includes(t))?3:0;
+  c3.items.push({name:'レビュー・評価データ',score:s,max:3,detail:s?'レビュースキーマ検出':'レビュー構造化データ未検出'});
+
+  c3.score=c3.items.reduce((a,i)=>a+i.score,0);cats.push(c3);
+
+  // ─── SEO 1: テクニカル基盤 ───
+  const c4={type:'seo',name:'SEO テクニカル基盤',sub:'クローラビリティ',icon:'⚙️',bg:'rgba(0,224,255,0.15)',max:25,items:[]};
+
+  if(psi){const p=psi.lighthouseResult?.categories?.performance?.score||0;s=Math.round(p*5);const a=psi.lighthouseResult?.audits||{};d=`LCP:${a['largest-contentful-paint']?.displayValue||'?'} CLS:${a['cumulative-layout-shift']?.displayValue||'?'} Performance:${Math.round(p*100)}/100`;}
+  else{s=2;d='PSIデータなし';}
+  c4.items.push({name:'Core Web Vitals',score:s,max:5,detail:d});
+
+  s=0;d='';if(h.hasVP){s+=3;d='viewport:✓';}else d='viewport:✗';
+  if(psi){const ss=psi.lighthouseResult?.categories?.seo?.score||0;s+=ss>=0.9?2:1;d+=` SEO:${Math.round(ss*100)}/100`;}
+  c4.items.push({name:'モバイルフレンドリー',score:s,max:5,detail:d});
+
+  c4.items.push({name:'HTTPS',score:h.https?5:0,max:5,detail:h.https?'HTTPS:✓':'HTTPS:✗ 要改善'});
+  c4.items.push({name:'XMLサイトマップ',score:sm?5:0,max:5,detail:sm?'sitemap.xml:検出':'sitemap.xml:未検出'});
+
+  s=0;d='';if(rb.exists){s=3;if(rb.hasSM){s+=2;d='robots.txt:あり（Sitemap参照あり）';}else d='robots.txt:あり（Sitemap参照なし）';}else d='robots.txt:未検出';
+  c4.items.push({name:'クローラビリティ管理',score:s,max:5,detail:d});
+
+  c4.score=c4.items.reduce((a,i)=>a+i.score,0);cats.push(c4);
+
+  // ─── SEO 2: コンテンツSEO ───
+  const c5={type:'seo',name:'コンテンツSEO',sub:'E-E-A-T・トピッククラスター',icon:'📊',bg:'rgba(136,255,0,0.15)',max:15,items:[]};
+
+  s=h.contentLen>5000?5:h.contentLen>2000?3:h.contentLen>500?1:0;
+  c5.items.push({name:'コンテンツの深さ',score:s,max:5,detail:`テキスト:約${h.contentLen.toLocaleString()}文字`});
+  c5.items.push({name:'トピッククラスター',score:Math.min(5,Math.round(h.intLinks/10)),max:5,detail:`内部リンク:${h.intLinks}件`});
+  s=0;d=[];if(h.hasAuth){s+=2;d.push('著者:あり');}else d.push('著者:なし');if(h.hasSD){s+=2;d.push('SD:あり');}else d.push('SD:なし');if(h.contentLen>2000)s+=1;
+  c5.items.push({name:'E-E-A-T',score:s,max:5,detail:d.join(' | ')});
+
+  c5.score=c5.items.reduce((a,i)=>a+i.score,0);cats.push(c5);
+
+  // ─── SEO 3: オンページSEO ───
+  const c6={type:'seo',name:'オンページSEO',sub:'ページ内最適化',icon:'🏷️',bg:'rgba(255,221,0,0.15)',max:25,items:[]};
+
+  if(h.titleLen>0&&h.titleLen<=60){s=5;d=`"${h.title}" (${h.titleLen}文字)`;}
+  else if(h.titleLen>60){s=3;d=`"${h.title.substring(0,50)}..." (${h.titleLen}文字, 60字以内推奨)`;}
+  else{s=0;d='タイトル未設定';}
+  c6.items.push({name:'タイトルタグ',score:s,max:5,detail:d});
+
+  if(h.metaDescLen>0&&h.metaDescLen<=160){s=5;d=`${h.metaDescLen}文字 — 適切`;}
+  else if(h.metaDescLen>160){s=3;d=`${h.metaDescLen}文字 — やや長い`;}
+  else{s=0;d='メタディスクリプション未設定';}
+  c6.items.push({name:'メタディスクリプション',score:s,max:5,detail:d});
+
+  s=0;if(h.h1===1)s+=2;else if(h.h1>0)s+=1;if(h.h2>=2)s+=1;if(h.hOk)s+=2;
+  c6.items.push({name:'見出し構造',score:s,max:5,detail:`H1:${h.h1}${h.h1!==1?' (1つ推奨)':''} H2:${h.h2} 階層:${h.hOk?'適切':'要改善'}`});
+
+  s=h.imgs===0?3:Math.round((h.imgsAlt/h.imgs)*5);
+  c6.items.push({name:'画像SEO（alt属性）',score:s,max:5,detail:`画像:${h.imgs}枚 alt付:${h.imgsAlt} alt無:${h.imgsNoAlt}`});
+
+  c6.items.push({name:'内部リンク最適化',score:Math.min(5,Math.round(h.intLinks/8)),max:5,detail:`内部:${h.intLinks}件 外部:${h.extLinks}件`});
+
+  c6.score=c6.items.reduce((a,i)=>a+i.score,0);cats.push(c6);
+
+  // ─── SEO 4: オフページSEO ───
+  const c7={type:'seo',name:'オフページSEO',sub:'外部評価',icon:'🔗',bg:'rgba(0,136,255,0.15)',max:10,items:[]};
+
+  s=0;d=[];if(h.hasOGP){s+=2;d.push('OGP:✓');}else d.push('OGP:✗');if(h.hasTC){s+=1;d.push('TC:✓');}else d.push('TC:✗');if(h.hasCan){s+=1;d.push('Canonical:✓');}else d.push('Canonical:✗');
+  c7.items.push({name:'SNS・ソーシャル対応',score:s,max:5,detail:d.join(' ')});
+  c7.items.push({name:'外部参照',score:Math.min(5,Math.round(h.extLinks/3)),max:5,detail:`外部リンク:${h.extLinks}件`});
+
+  c7.score=c7.items.reduce((a,i)=>a+i.score,0);cats.push(c7);
+
+  // ─── SEO 5: UX・AEO ───
+  const c8={type:'seo',name:'UX・AEO対策',sub:'ユーザー体験',icon:'✨',bg:'rgba(255,45,123,0.15)',max:15,items:[]};
+
+  s=0;if(h.contentLen>2000)s+=2;if(h.h2>=3)s+=1;if(!h.noindex)s+=1;if(h.hasAuth)s+=1;
+  c8.items.push({name:'ヘルプフルコンテンツ',score:s,max:5,detail:`コンテンツ量:${h.contentLen>2000?'充実':'少なめ'} noindex:${h.noindex?'あり':'なし'}`});
+
+  s=0;if(h.hasFAQC||h.hasFAQS)s+=2;if(h.hasDef)s+=2;if(h.hasSD)s+=1;
+  c8.items.push({name:'AEO対策',score:s,max:5,detail:`FAQ:${h.hasFAQC?'あり':'なし'} 定義文:${h.hasDef?'あり':'なし'} SD:${h.hasSD?'あり':'なし'}`});
+
+  s=0;if(h.hasCS)s++;if(h.lang)s++;if(h.hasFav)s++;if(h.https)s++;if(!h.noindex)s++;
+  c8.items.push({name:'サイト品質管理',score:s,max:5,detail:`charset:${h.hasCS?'✓':'✗'} lang:${h.lang||'—'} favicon:${h.hasFav?'✓':'✗'} HTTPS:${h.https?'✓':'✗'}`});
+
+  c8.score=c8.items.reduce((a,i)=>a+i.score,0);cats.push(c8);
+
+  // Totals
+  const llmo = cats.filter(c=>c.type==='llmo');
+  const seo = cats.filter(c=>c.type==='seo');
+  return {
+    categories: cats,
+    llmoScore: llmo.reduce((a,c)=>a+c.score,0),
+    llmoMax: llmo.reduce((a,c)=>a+c.max,0),
+    seoScore: seo.reduce((a,c)=>a+c.score,0),
+    seoMax: seo.reduce((a,c)=>a+c.max,0),
+    totalScore: cats.reduce((a,c)=>a+c.score,0),
+    totalMax: cats.reduce((a,c)=>a+c.max,0),
+    totalChecks: cats.reduce((a,c)=>a+c.items.length,0)
+  };
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderResults(results, url) {
+  const sec = document.getElementById('resultsSection');
+  sec.classList.add('active');
+  currentResults = results;
+  currentUrl = url;
+
+  document.getElementById('resultUrl').textContent = url;
+
+  const pct = Math.round((results.totalScore / results.totalMax) * 100);
+  const g = getGrade(pct);
+  const circ = 2 * Math.PI * 94;
+
+  const ring = document.getElementById('ringFill');
+  ring.setAttribute('stroke-dasharray', circ);
+  ring.style.stroke = g.c;
+  setTimeout(() => ring.setAttribute('stroke-dashoffset', circ * (1 - pct / 100)), 100);
+
+  document.getElementById('ringNumber').textContent = pct;
+  document.getElementById('ringNumber').style.color = g.c;
+  document.getElementById('gradeLabel').textContent = g.l;
+  document.getElementById('gradeLabel').style.color = g.c;
+
+  document.getElementById('seoStat').textContent = Math.round((results.seoScore/results.seoMax)*100);
+  document.getElementById('llmoStat').textContent = Math.round((results.llmoScore/results.llmoMax)*100);
+  document.getElementById('checksStat').textContent = results.totalChecks;
+
+  renderCategories(currentTab);
+}
+
+function renderCategories(filter) {
+  let cats = currentResults.categories;
+  if (filter === 'seo') cats = cats.filter(c => c.type === 'seo');
+  if (filter === 'llmo') cats = cats.filter(c => c.type === 'llmo');
+
+  document.getElementById('catContainer').innerHTML = '<div class="cat-grid">' +
+    cats.map((cat, i) => {
+      const pct = Math.round((cat.score / cat.max) * 100);
+      const color = getScoreColor(cat.score, cat.max);
+      return `<div class="cat-card anim-in" style="animation-delay:${i*0.06}s">
+        <div class="cat-head" onclick="toggleCat(this)">
+          <div class="cat-title-wrap">
+            <div class="cat-icon" style="background:${cat.bg}">${cat.icon}</div>
+            <div><div class="cat-name">${cat.name}</div><div class="cat-sub">${cat.sub}</div></div>
+          </div>
+          <div class="cat-score" style="color:${color}">${pct}</div>
+        </div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <div class="cat-body">
+          ${cat.items.map(item => {
+            const ic = getScoreColor(item.score, item.max);
+            const ip = (item.score/item.max)*100;
+            const dc = ip>=70?'pass':ip>=40?'warn':'fail';
+            return `<div class="check-row">
+              <div class="check-info">
+                <div class="check-name">${statusDot(item.score,item.max)} ${item.name}</div>
+                <div class="check-detail">${item.detail}</div>
+              </div>
+              <div class="check-pts" style="color:${ic}">${item.score}/${item.max}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+}
+
+// ============================================================
+// MAIN SCAN
+// ============================================================
+async function startScan() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) { alert('URLを入力してください'); return; }
+  try { new URL(url); } catch { alert('有効なURLを入力してください'); return; }
+
+  saveSettings();
+  const btn = document.getElementById('scanBtn');
+  const pw = document.getElementById('progressWrap');
+  btn.disabled = true;
+  btn.textContent = '診断中...';
+  pw.classList.add('active');
+  document.getElementById('resultsSection').classList.remove('active');
+  document.getElementById('batchResults').classList.remove('active');
+
+  try {
+    setProgress(5, 'HTMLを取得中...');
+    const html = await fetchHTML(url);
+    setProgress(20, 'robots.txtを確認中...');
+    const robots = await fetchRobots(url);
+    setProgress(35, 'サイトマップを確認中...');
+    const sitemap = await fetchSitemap(url);
+    setProgress(50, 'PageSpeed Insights APIへ問い合わせ中...');
+    const psi = await fetchPSI(url);
+    setProgress(75, 'データを解析中...');
+    await sleep(400);
+
+    const ha = html ? analyzeHTML(html, url) : defaultHA(url);
+    const ra = analyzeRobots(robots);
+    const sm = !!sitemap;
+
+    setProgress(90, 'スコアを計算中...');
+    await sleep(300);
+    const results = calculateScores(ha, ra, sm, psi);
+
+    setProgress(100, '完了！');
+    await sleep(400);
+    renderResults(results, url);
+    saveToHistory(url, results);
+
+    if (!html) {
+      console.warn('HTML取得に失敗。PSIデータのみで診断。');
+    }
+  } catch(err) {
+    console.error(err);
+    alert('診断中にエラー: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 診断開始';
+    setTimeout(() => pw.classList.remove('active'), 1000);
+  }
+}
+
+function defaultHA(url) {
+  return { title:'',titleLen:0,metaDesc:'',metaDescLen:0,h1:0,h2:0,h3:0,h4:0,hOk:false,imgs:0,imgsAlt:0,imgsNoAlt:0,links:0,intLinks:0,extLinks:0,jsonLD:[],hasSD:false,sdTypes:[],hasMD:false,hasOGP:false,hasTC:false,hasCan:false,hasVP:false,hasCS:false,hasFav:false,lang:'',hasFAQS:false,hasFAQC:false,hasAuth:false,authMeta:'',hasDef:false,stats:0,https:url.startsWith('https://'),contentLen:0,noindex:false };
+}
+
+// ============================================================
+// BATCH SCAN
+// ============================================================
+async function startBatchScan() {
+  const text = document.getElementById('batchUrls').value.trim();
+  if (!text) { alert('URLを入力してください'); return; }
+  const urls = text.split('\n').map(u => u.trim()).filter(u => u);
+  if (!urls.length) { alert('URLを入力してください'); return; }
+  if (urls.length > 10) { alert('最大10件までです'); return; }
+
+  // Validate
+  for (const u of urls) {
+    try { new URL(u); } catch { alert(`無効なURL: ${u}`); return; }
+  }
+
+  saveSettings();
+  const btn = document.getElementById('scanBtn');
+  const pw = document.getElementById('progressWrap');
+  btn.disabled = true;
+  pw.classList.add('active');
+  document.getElementById('resultsSection').classList.remove('active');
+
+  const batchBody = document.getElementById('batchTableBody');
+  batchBody.innerHTML = '';
+  document.getElementById('batchResults').classList.add('active');
+
+  const allResults = [];
+
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i];
+    const pct = Math.round(((i) / urls.length) * 100);
+    setProgress(pct, `(${i+1}/${urls.length}) ${url} を診断中...`);
+
+    try {
+      const [html, robots, sitemap, psi] = await Promise.all([
+        fetchHTML(url), fetchRobots(url), fetchSitemap(url), fetchPSI(url)
+      ]);
+
+      const ha = html ? analyzeHTML(html, url) : defaultHA(url);
+      const ra = analyzeRobots(robots);
+      const results = calculateScores(ha, ra, !!sitemap, psi);
+
+      const tp = Math.round((results.totalScore/results.totalMax)*100);
+      const sp = Math.round((results.seoScore/results.seoMax)*100);
+      const lp = Math.round((results.llmoScore/results.llmoMax)*100);
+      const g = getGrade(tp);
+
+      allResults.push({ url, results, tp, sp, lp, grade: g });
+      saveToHistory(url, results);
+
+      batchBody.innerHTML += `<tr>
+        <td class="url-cell">${url}</td>
+        <td class="score-cell" style="color:${g.c}">${tp}</td>
+        <td class="score-cell" style="color:${getScoreColor(sp,100)}">${sp}</td>
+        <td class="score-cell" style="color:${getScoreColor(lp,100)}">${lp}</td>
+        <td style="font-size:12px;color:${g.c}">${g.l.split('—')[0].trim()}</td>
+        <td><button class="btn btn-secondary btn-sm" onclick="viewBatchDetail(${allResults.length-1})">詳細</button></td>
+      </tr>`;
+    } catch(err) {
+      batchBody.innerHTML += `<tr>
+        <td class="url-cell">${url}</td>
+        <td colspan="5" style="color:var(--accent-3);font-size:12px">エラー: ${err.message}</td>
+      </tr>`;
+    }
+  }
+
+  window._batchResults = allResults;
+  setProgress(100, `${urls.length}件の診断完了！`);
+  await sleep(500);
+  btn.disabled = false;
+  btn.textContent = '🔍 診断開始';
+  setTimeout(() => pw.classList.remove('active'), 1000);
+}
+
+function viewBatchDetail(idx) {
+  const item = window._batchResults[idx];
+  if (!item) return;
+  renderResults(item.results, item.url);
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================================
+// EXPORT CSV
+// ============================================================
+function exportCSV() {
+  if (!currentResults) return;
+  let csv = '\uFEFF';
+  csv += `診断URL,${currentUrl}\n`;
+  csv += `診断日時,${new Date().toLocaleString('ja-JP')}\n\n`;
+  csv += 'カテゴリ,タイプ,チェック項目,スコア,最大,割合(%),詳細\n';
+  for (const cat of currentResults.categories) {
+    for (const item of cat.items) {
+      csv += `"${cat.name}","${cat.type.toUpperCase()}","${item.name}",${item.score},${item.max},${Math.round((item.score/item.max)*100)},"${item.detail.replace(/"/g,'""')}"\n`;
+    }
+  }
+  csv += `\n"","","SEOスコア",${currentResults.seoScore},${currentResults.seoMax},${Math.round((currentResults.seoScore/currentResults.seoMax)*100)},""\n`;
+  csv += `"","","LLMOスコア",${currentResults.llmoScore},${currentResults.llmoMax},${Math.round((currentResults.llmoScore/currentResults.llmoMax)*100)},""\n`;
+  csv += `"","","総合スコア",${currentResults.totalScore},${currentResults.totalMax},${Math.round((currentResults.totalScore/currentResults.totalMax)*100)},""\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `seo_llmo_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ============================================================
+// EXPORT PDF
+// ============================================================
+async function exportPDF() {
+  if (!currentResults) return;
+
+  const btn = event.target;
+  btn.textContent = 'PDF生成中...';
+  btn.disabled = true;
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const w = 210, margin = 15;
+    let y = 20;
+
+    // Title
+    pdf.setFontSize(22);
+    pdf.setTextColor(40, 40, 80);
+    pdf.text('SEO & LLMO Diagnostic Report', margin, y);
+    y += 10;
+
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 130);
+    pdf.text(`URL: ${currentUrl}`, margin, y);
+    y += 5;
+    pdf.text(`Date: ${new Date().toLocaleString('ja-JP')}`, margin, y);
+    y += 10;
+
+    // Overall scores
+    const tp = Math.round((currentResults.totalScore / currentResults.totalMax) * 100);
+    const sp = Math.round((currentResults.seoScore / currentResults.seoMax) * 100);
+    const lp = Math.round((currentResults.llmoScore / currentResults.llmoMax) * 100);
+    const g = getGrade(tp);
+
+    pdf.setFillColor(240, 240, 250);
+    pdf.roundedRect(margin, y, w - margin * 2, 22, 3, 3, 'F');
+    pdf.setFontSize(14);
+    pdf.setTextColor(40, 40, 80);
+    pdf.text(`Total: ${tp}/100  |  SEO: ${sp}/100  |  LLMO: ${lp}/100  |  ${g.l}`, margin + 5, y + 14);
+    y += 30;
+
+    // Category details
+    for (const cat of currentResults.categories) {
+      if (y > 260) { pdf.addPage(); y = 20; }
+
+      const cpct = Math.round((cat.score / cat.max) * 100);
+      pdf.setFillColor(245, 245, 255);
+      pdf.roundedRect(margin, y, w - margin * 2, 8, 2, 2, 'F');
+      pdf.setFontSize(11);
+      pdf.setTextColor(40, 40, 80);
+      pdf.text(`${cat.icon} ${cat.name} (${cat.sub})  —  ${cpct}/100`, margin + 3, y + 6);
+      y += 12;
+
+      for (const item of cat.items) {
+        if (y > 270) { pdf.addPage(); y = 20; }
+        const ipct = Math.round((item.score / item.max) * 100);
+
+        pdf.setFontSize(9);
+        pdf.setTextColor(60, 60, 90);
+        pdf.text(`${ipct >= 70 ? '[PASS]' : ipct >= 40 ? '[WARN]' : '[FAIL]'} ${item.name}`, margin + 4, y);
+        pdf.setTextColor(100, 100, 140);
+        pdf.text(`${item.score}/${item.max}`, w - margin - 15, y);
+        y += 4;
+
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(130, 130, 160);
+        const lines = pdf.splitTextToSize(item.detail, w - margin * 2 - 12);
+        pdf.text(lines, margin + 6, y);
+        y += lines.length * 3.5 + 3;
+      }
+      y += 4;
+    }
+
+    pdf.save(`seo_llmo_report_${new Date().toISOString().slice(0,10)}.pdf`);
+  } catch(err) {
+    console.error('PDF export error:', err);
+    alert('PDF生成中にエラーが発生しました');
+  } finally {
+    btn.textContent = '📄 PDF出力';
+    btn.disabled = false;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadSettings();
+
+// Enter key to scan
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startScan();
+});
+</script>
+</body>
+</html>
