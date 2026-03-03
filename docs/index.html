@@ -805,6 +805,75 @@ body {
   font-size: 15px;
 }
 
+/* === CTA Card === */
+.cta-card {
+  background: linear-gradient(135deg, rgba(123,47,255,0.08), rgba(0,224,255,0.08));
+  border: 1px solid rgba(123,47,255,0.25);
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+  margin-top: 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.cta-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 300px at 50% 50%, rgba(123,47,255,0.06), transparent);
+  pointer-events: none;
+}
+
+.cta-emoji {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.cta-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-0);
+  margin-bottom: 6px;
+}
+
+.cta-desc {
+  font-size: 12px;
+  color: var(--text-1);
+  margin-bottom: 16px;
+  line-height: 1.7;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent-1));
+  color: #fff;
+  border: none;
+  border-radius: 100px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(123,47,255,0.25);
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(123,47,255,0.35);
+}
+
+.cta-sub {
+  font-size: 11px;
+  color: var(--text-2);
+  margin-top: 10px;
+}
+
 /* === Responsive === */
 @media (max-width: 940px) {
   .cat-grid { grid-template-columns: 1fr; }
@@ -1483,11 +1552,13 @@ function renderCategories(filter) {
   if (filter === 'seo') cats = cats.filter(c => c.type === 'seo');
   if (filter === 'llmo') cats = cats.filter(c => c.type === 'llmo');
 
+  let ctaInserted = false;
+
   document.getElementById('catContainer').innerHTML = '<div class="cat-grid">' +
     cats.map((cat, i) => {
       const pct = Math.round((cat.score / cat.max) * 100);
       const color = getScoreColor(cat.score, cat.max);
-      return `<div class="cat-card anim-in" style="animation-delay:${i*0.06}s">
+      let cardHtml = `<div class="cat-card anim-in" style="animation-delay:${i*0.06}s">
         <div class="cat-head" onclick="toggleCat(this)">
           <div class="cat-title-wrap">
             <div class="cat-icon" style="background:${cat.bg}">${cat.icon}</div>
@@ -1511,7 +1582,48 @@ function renderCategories(filter) {
           }).join('')}
         </div>
       </div>`;
-    }).join('') + '</div>';
+
+      // Insert CTA after first category scoring below 50%
+      if (!ctaInserted && pct < 50) {
+        ctaInserted = true;
+        cardHtml += buildCTA(cat.name, pct);
+      }
+
+      return cardHtml;
+    }).join('') + '</div>' + (!ctaInserted ? buildCTABottom() : '');
+}
+
+function buildCTA(catName, pct) {
+  return `<div class="cta-card anim-in" style="grid-column: 1 / -1;">
+    <div class="cta-emoji">💬</div>
+    <div class="cta-title">この結果、気になりませんか？</div>
+    <div class="cta-desc">
+      「${catName}」のスコアは <strong>${pct}点</strong>。<br>
+      改善ポイントは明確なので、正しい手順で取り組めば伸びしろ大です。<br>
+      何から手をつければいいか、気軽にお話ししましょう。
+    </div>
+    <a class="cta-btn" href="https://calendar.app.google/1uYY3GyGri5bSWrx6" target="_blank" rel="noopener">
+      📅 無料で相談してみる
+    </a>
+    <div class="cta-sub">※ 30分のオンライン相談・料金は一切かかりません</div>
+  </div>`;
+}
+
+function buildCTABottom() {
+  const tp = Math.round((currentResults.totalScore / currentResults.totalMax) * 100);
+  if (tp >= 80) return ''; // High score = no CTA needed
+  return `<div class="cta-card anim-in" style="max-width:880px;margin:20px auto 0;">
+    <div class="cta-emoji">🚀</div>
+    <div class="cta-title">さらにスコアを伸ばしたい方へ</div>
+    <div class="cta-desc">
+      現在の総合スコアは <strong>${tp}点</strong>。<br>
+      SEO・LLMO両面の改善プランを一緒に考えませんか？
+    </div>
+    <a class="cta-btn" href="https://calendar.app.google/1uYY3GyGri5bSWrx6" target="_blank" rel="noopener">
+      📅 気軽に相談する
+    </a>
+    <div class="cta-sub">※ 30分のオンライン相談・料金は一切かかりません</div>
+  </div>`;
 }
 
 // ============================================================
